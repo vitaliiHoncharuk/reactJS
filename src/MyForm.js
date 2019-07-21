@@ -9,7 +9,8 @@ class MyForm extends React.Component {
         this.state = {
             mail: '',
             pwd: '',
-            repeatPwd: ''
+            repeatPwd: '',
+            submited: false
         }
     }
 
@@ -18,40 +19,66 @@ class MyForm extends React.Component {
         this.setState({[name]: value});
     };
 
+    validPwd = (pwd ) =>{
+        // eslint-disable-next-line
+        const isValidPwd = new RegExp(/^.*(?=.{6,})(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(^[a-zA-Z0-9@\$=!:.#%]+$)/);
+        if ( pwd.match(isValidPwd)) return true;
+    };
+
     validate = (event) => {
         event.preventDefault();
         const {mail, pwd, repeatPwd} = this.state;
-        // eslint-disable-next-line
-        let isValidPwd = new RegExp(/^.*(?=.{6,})(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(^[a-zA-Z0-9@\$=!:.#%]+$)/);
         if (!(mail && pwd && repeatPwd)) {
             return;
         }
-
-        if (pwd.match(isValidPwd) && pwd === repeatPwd && mail.includes('@gmail.com')) {
+        this.setState({
+            submited: true
+        });
+        if (this.validPwd(pwd) && pwd === repeatPwd && mail.includes('@gmail.com')) {
             alert('valid');
             localStorage.setItem('user', 'userPassword');
             this.props.history.push("home");
+        }
+        else {
+            alert('Invalid data , please try again.');
         }
 
     };
 
     render() {
-       if (localStorage.getItem('user') ) {
-           this.props.history.push("home");
-       }
+        const {mail, pwd, repeatPwd,submited} = this.state;
+        if (localStorage.getItem('user')) {
+            this.props.history.push("home");
+        }
         return (
             <form onSubmit={this.validate}>
                 <div>
                     <label>Mail : </label>
-                    <input type="email" name="mail" value={this.state.mail} onChange={this.handleChange}/>
+                    <input type="email" name="mail" value={mail} onChange={this.handleChange}/>
+                    {submited && !mail.includes('@gmail.com') &&
+                    <div style = {{color : 'red'}}>
+                        Mail should include @gmail.com !
+                    </div>
+                    }
                 </div>
+
                 <div>
                     <label>Password : </label>
-                    <input type="password" name="pwd" value={this.state.pwd} onChange={this.handleChange}/>
+                    <input type="password" name="pwd" value={pwd} onChange={this.handleChange}/>
+                    { submited && !this.validPwd(pwd) &&
+                    <div style = {{color : 'red'}}>
+                        Password invalid!
+                    </div>
+                    }
                 </div>
                 <div>
                     <label>Repeat password : </label>
-                    <input type="password" name="repeatPwd" value={this.state.repeatPwd} onChange={this.handleChange}/>
+                    <input type="password" name="repeatPwd" value={repeatPwd} onChange={this.handleChange}/>
+                    {submited && !(pwd === repeatPwd) &&
+                    <div style = {{color : 'red'}}>
+                        Passwords didn't match!
+                    </div>
+                    }
                 </div>
                 <input type="submit"/>
             </form>
